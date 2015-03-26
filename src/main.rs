@@ -2,6 +2,9 @@
 
 use std::env;
 
+mod tokenizer;
+mod equation;
+
 fn get_equation() -> String
 {
     let args : Vec<String> = env::args().collect();

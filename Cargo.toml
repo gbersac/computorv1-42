@@ -3,3 +3,7 @@
 name = "computor"
 version = "0.0.1"
 authors = ["gbersac <bersac_1@hotmail.fr>"]
+
+[dependencies]
+#regex = "*"
+#regex_macros = "*"
