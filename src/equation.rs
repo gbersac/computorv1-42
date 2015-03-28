@@ -1,5 +1,7 @@
 use tokenizer::{Tokenizer, TokenInfo};
+use regex::{Regex};
 
+#[derive(Clone)]
 enum TokenType
 {
     NUMBER,
@@ -14,7 +16,7 @@ impl Equation
     fn parse()
     {
         let token_types = vec![
-            TokenInfo::new(TokenType::NUMBER, &"[0-1]+.?[0-1]+".to_string()),
+            TokenInfo::new(TokenType::NUMBER, regex!("[0-1]+.?[0-1]+")),
         ];
         Tokenizer::new(token_types);
     }

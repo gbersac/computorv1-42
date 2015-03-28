@@ -1,9 +1,16 @@
 #![feature(env)]
+#![feature(core)]
+#![feature(collections)]
+
+#![feature(plugin)]
+#![plugin(regex_macros)]
+extern crate regex;
 
 use std::env;
 
 mod tokenizer;
 mod equation;
+mod fc_string;
 
 fn get_equation() -> String
 {
