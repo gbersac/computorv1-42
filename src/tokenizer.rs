@@ -21,12 +21,12 @@ impl<E: Clone> Token<E>
 		}
 	}
 
-	fn get_type(&self) -> &E
+	pub fn get_type(&self) -> &E
 	{
 		&self.t_type
 	}
 
-	fn get_content(&self) -> &String
+	pub fn get_content(&self) -> &String
 	{
 		&self.content
 	}
