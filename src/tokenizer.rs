@@ -13,7 +13,7 @@ pub struct Token<E: Clone>
 
 impl<E: Clone> Token<E>
 {
-	fn new(_t_type: E, _content: String) -> Token<E>
+	pub fn new(_t_type: E, _content: String) -> Token<E>
 	{
 		Token{
 			t_type: _t_type,
