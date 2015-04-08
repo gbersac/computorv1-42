@@ -15,15 +15,23 @@ enum TokenType
 /// This is the representation of a "a * X^p"
 /// a being multiply
 /// p being the power
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 struct XPart
 {
-	power:      f32,
-	multiply:   f32,
+	pub power:      f32,
+	pub multiply:   f32,
 }
 
 impl XPart
 {
+	fn new(mul: f32, pow: f32) -> XPart
+	{
+	    XPart{
+	        multiply: mul,
+	        power: pow,
+	    }
+	}
+
 	fn extract_power(xstr: &String) -> f32
 	{
 		for (i, c) in xstr .chars().enumerate() {
@@ -31,7 +39,6 @@ impl XPart
 				'0'...'9' => {
 					let sstr = fc_string::sub_string(xstr, i, xstr.len() - i)
 						.unwrap();
-					println!("{:?}", sstr);
 					return sstr.parse::<f32>().unwrap_or(1.);
 				},
 				_ => {}
@@ -42,7 +49,7 @@ impl XPart
 
 	fn from_tokens(tokens: &Vec<Token<TokenType>>) -> XPart
 	{
-		let mut pow = 1.;
+		let mut pow = 0.;
 		let mut mul = 1.;
 		let mut is_negative = false;
 		for tok in tokens.iter(){
@@ -66,6 +73,11 @@ impl XPart
 		}
 		XPart{power: pow, multiply: mul}
 	}
+
+    pub fn test_values(&self, mul: f32, pow: f32) -> bool
+    {
+        self.multiply == mul && self.power == pow
+    }
 }
 
 pub struct Equation;
@@ -120,6 +132,33 @@ impl Equation
 		to_return.push(XPart::from_tokens(&tok_buffer));
 		to_return
 	}
+
+    /// Return a list of Xpart which has been changed so that rx is
+    /// now equal to 0.
+    fn reduce(lxs: &Vec<XPart>, rxs: &Vec<XPart>) -> Vec<XPart>
+    {
+        let mut to_return = lxs.clone();
+        for rx in rxs{
+            let mut found = false; //has power equivalent to rx been found
+            //search for XPart in left which have the same power 
+            //as rx to reduce
+            for lx in &mut to_return{
+                if lx.power == rx.power{
+                    println!("left  {:?}", lx);
+                    println!("right {:?}", rx);
+                    let buff = lx.multiply - rx.multiply;
+                    println!("{} = {} - {}", buff, lx.multiply, rx.multiply);
+                    lx.multiply = buff;
+                    found = true;
+                }
+            }
+            //if no power equivalent in left add new XPart in left
+            if !found{
+                to_return.push(rx.clone());
+            }
+        }
+        to_return
+    }
 
 	pub fn parse(to_parse: &String)
 	{
@@ -186,7 +225,7 @@ fn test_XPart()
 	let test1 = XPart::from_tokens(&vec![
 			Token::new(TokenType::NUMBER, "3".to_string())]);
 	println!("{:?}", test1);
-	assert!(test1.power == 1. && test1.multiply == 3.);
+	assert!(test1.power == 0. && test1.multiply == 3.);
 
 	let test2 = XPart::from_tokens(&vec![
 			Token::new(TokenType::NUMBER, "3".to_string()),
@@ -209,25 +248,60 @@ fn test_to_xparts()
 	let tokens1 = Equation::split(&"3 * X^5".to_string());
 	let test1 = Equation::to_xparts(tokens1);
 	println!("{:?}", test1);
-	assert!(test1[0].power == 5. &&
-			test1[0].multiply == 3.);
+	assert!(test1[0].test_values(3., 5.));
 
 	let tokens2 = Equation::split(&"3 * X^4 + 5 * X^6".to_string());
 	let test2 = Equation::to_xparts(tokens2);
 	println!("{:?}", test2);
-	assert!(test2[0].power == 4. &&
-			test2[0].multiply == 3.);
-	assert!(test2[1].power == 6. &&
-			test2[1].multiply == 5.);
+	assert!(test2[0].test_values(3., 4.));
+	assert!(test2[1].test_values(5., 6.));
 
 	let tokens3 = Equation::split(&"3 * X^4 - 5 * X^6".to_string());
 	let test3 = Equation::to_xparts(tokens3);
 	println!("{:?}", test3);
-	assert!(test3[0].power == 4. &&
-			test3[0].multiply == 3.);
-	assert!(test3[1].power == 6. &&
-			test3[1].multiply == -5.);
+	assert!(test3[0].test_values(3., 4.));
+	assert!(test3[1].test_values(-5., 6.));
+
+	let tokens4 = Equation::split(&"2 - 3 * X^1".to_string());
+	let test4 = Equation::to_xparts(tokens4);
+	println!("{:?}", test4);
+	assert!(test4[0].test_values(2., 0.) &&
+	        test4[1].test_values(-3., 1.));
 }
 
+#[test]
+fn test_reduce()
+{
+	let tokens1 = Equation::split(&"2 + 3 * X^1 + 4 * X^2".to_string());
+	let x1      = Equation::to_xparts(tokens1);
+	let tokens2 = Equation::split(&"0".to_string());
+	let x2      = Equation::to_xparts(tokens2);
+	let tokens3 = Equation::split(&"1 + 5 * X^1".to_string());
+	let x3      = Equation::to_xparts(tokens3);
+	let tokens4 = Equation::split(&"2 - 3 * X^1".to_string());
+	let x4      = Equation::to_xparts(tokens4);
 
+    let test1 = Equation::reduce(&x1, &x2);
+	println!("{:?}", test1);
+    assert!(test1.len() == 3 &&
+           test1[0].test_values(2., 0.) &&
+           test1[1].test_values(3., 1.) &&
+           test1[2].test_values(4., 2.));
+
+    let test2 = Equation::reduce(&x1, &x3);
+	println!("{:?}", test2);
+    assert!(test2.len() == 3 &&
+           test2[0].test_values(1., 0.) &&
+           test2[1].test_values(-2., 1.) &&
+           test2[2].test_values(4., 2.));
+
+    println!("###########################");
+	println!("x4{:?}", x4);
+    let test2 = Equation::reduce(&x1, &x4);
+	println!("{:?}", test2);
+    assert!(test2.len() == 3 &&
+           test2[0].test_values(0., 0.) &&
+           test2[1].test_values(6., 1.) &&
+           test2[2].test_values(4., 2.));
+}
 
