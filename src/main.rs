@@ -11,6 +11,7 @@ use std::env;
 mod tokenizer;
 mod equation;
 mod fc_string;
+mod x_part;
 
 fn get_equation() -> String
 {
