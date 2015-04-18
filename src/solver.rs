@@ -6,7 +6,7 @@ use x_part::{XPart};
 
 pub struct Solver;
 
-#[derive(PartialEq, Clone)]
+#[derive(PartialEq, Clone, Debug)]
 pub enum Solution
 {
     /// If discriminant = 0
@@ -17,6 +17,8 @@ pub enum Solution
     Complex(f32, f32),
     /// If 0 = 0
     Infinite,
+    /// If a = b (where a and b are scalar)
+    NoSolution,
 }
 
 impl Solver
@@ -38,7 +40,11 @@ impl Solver
     pub fn solve(xs: &Vec<XPart>) -> Solution
     {
         let (a, b, c) = Solver::analyze_xparts(xs);
-        if a == 0. && b == 0. && c == 0.{
+        println!("a {}, b {}, c {}", a, b, c);
+        if a == 0. && b == 0.{
+            if c != 0.{
+                return Solution::NoSolution;
+            }
             return Solution::Infinite;
         }
         let discriminant = b * b - 4. * a * c;
@@ -77,7 +83,7 @@ impl Solver
         to_return
     }
 
-    /// Function to print a list of xparts as an  equation equaling 0.\
+    /// Function to print a list of xparts as an  equation equaling 0.
     /// Return only for the tests
     pub fn print_xparts(xs: &Vec<XPart>) -> String
     {
@@ -102,22 +108,21 @@ mod test
     use super::*;
 	use equation::Equation;
 
-    fn get_solution(equation: &str) -> Solution
+    fn cmp_solve(equation: &str, sol: Solution)
     {
 	    let x = Equation::parse(&equation.to_string());
-	    Solver::solve(&x)
+	    let result = Solver::solve(&x);
+	    println!("{:?} -> r{:?}", equation, result);
+        assert!(result == sol);
     }
 
     #[test]
     fn test_solve()
     {
-        let test1 = get_solution("6 + 1 * X^1 - 1 * X^2 = 0");
-        assert!(test1 == Solution::Double(3., -2.));
-        let test2 = get_solution("5 * X^0 + 4 * X^1 - 9.3 * X^2 = 1 * X^0");
-        // assert!(test2 == );
-	    let test2 = get_solution("5 * X^0 + 4 * X^1 = 4 * X^0");
-	    let test3 = get_solution("42 * X^0 = 42 * X^0");
-        assert!(test3 == Solution::Infinite);
+        cmp_solve("6 + 1 * X^1 - 1 * X^2 = 0", Solution::Double(3., -2.));
+        // let test2 = cmp_solve("5 * X^0 + 4 * X^1 - 9.3 * X^2 = 1 * X^0");
+	    cmp_solve("42 * X^0 = 42 * X^0", Solution::Infinite);
+	    cmp_solve("4 * X^0 = 8 * X^0", Solution::NoSolution);
     }
 
     fn cmp_print_xparts(l: &str, r: &str)
@@ -136,6 +141,5 @@ mod test
                          "1 + 4 * X");
         cmp_print_xparts("8 * X^0 - 6 * X^1 + 0 * X^2 - 5.6 * X^3 = 3 * X^0",
                          "5 + -6 * X + -5.6 * X^3");
-
     }
 }
