@@ -149,7 +149,6 @@ impl<E: Clone> Tokenizer<E>
 		while !to_split.is_empty() {
 			let tok = self.match_token(&mut to_split)
 					.expect("this string does not match any token type");
-
 			to_split = self.reduce_to_split(&to_split, tok.get_content().len());
 			tokens.push(tok);
 		}
@@ -194,14 +193,14 @@ fn test_tokenizer()
 	let vec_token = tokenizer.split(&"bbbaaa".to_string());
 	println!("{:?}", vec_token);
 	assert!(vec_token.len() == 2 &&
-			vec_token[0].get_content().as_slice() == "bbb" &&
-			vec_token[1].get_content().as_slice() == "aaa");
+			vec_token[0].get_content() == "bbb" &&
+			vec_token[1].get_content() == "aaa");
 
 	// unknow token
 	let vec_token = tokenizer.split(&"bbbaaac".to_string());
 	println!("{:?}", vec_token);
 	assert!(vec_token.len() == 3 &&
-			vec_token[0].get_content().as_slice() == "bbb" &&
-			vec_token[1].get_content().as_slice() == "aaa" &&
-			vec_token[2].get_content().as_slice() == "c");
+			vec_token[0].get_content() == "bbb" &&
+			vec_token[1].get_content() == "aaa" &&
+			vec_token[2].get_content() == "c");
 }

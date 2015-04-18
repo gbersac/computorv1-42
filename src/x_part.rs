@@ -45,7 +45,7 @@ impl XPart
 		for tok in tokens.iter(){
 			match *tok.get_type(){
 				TokenType::ADD_SUB => {
-					if tok.get_content().as_slice() == "-" {
+					if tok.get_content() == "-" {
 						is_negative = true;
 					}
 				}

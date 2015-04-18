@@ -6,16 +6,18 @@
 #![plugin(regex_macros)]
 extern crate regex;
 
-use std::env;
+use equation::Equation;
+use solver::Solver;
 
 mod tokenizer;
 mod equation;
 mod fc_string;
 mod x_part;
+mod solver;
 
 fn get_equation() -> String
 {
-    let args : Vec<String> = env::args().collect();
+    let args : Vec<String> = std::env::args().collect();
     if args.len() != 2{
         panic!("Argument error");
     }
@@ -25,5 +27,6 @@ fn get_equation() -> String
 fn main() 
 {
     let equation_str = get_equation();
-    println!("{}", equation_str);
+    let equation = Equation::parse(&equation_str);
+    Solver::print_xparts(&equation);
 }

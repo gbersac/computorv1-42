@@ -20,9 +20,9 @@ impl Equation
 	fn split(to_parse: &String) -> Vec<Token<TokenType>>
 	{
 		let token_types = vec![
+			TokenInfo::new(TokenType::X_OPERAND, regex!("X *\\^ *[0-9]")),
 			TokenInfo::new(TokenType::NUMBER, regex!("[0-9]+\\.?[0-9]*")),
 			TokenInfo::new(TokenType::MULTIPLY, regex!("\\*")),
-			TokenInfo::new(TokenType::X_OPERAND, regex!("X *\\^ *[0-9]")),
 			TokenInfo::new(TokenType::ADD_SUB, regex!("[+-]")),
 			TokenInfo::new(TokenType::EQUAL, regex!("=")),
 		];
@@ -77,10 +77,7 @@ impl Equation
             //as rx to reduce
             for lx in &mut to_return{
                 if lx.power == rx.power{
-                    println!("left  {:?}", lx);
-                    println!("right {:?}", rx);
                     let buff = lx.multiply - rx.multiply;
-                    println!("{} = {} - {}", buff, lx.multiply, rx.multiply);
                     lx.multiply = buff;
                     found = true;
                 }
@@ -93,7 +90,8 @@ impl Equation
         to_return
     }
 
-	pub fn parse(to_parse: &String)
+	/// Parse the string into an equation and reduce it.
+	pub fn parse(to_parse: &String) -> Vec<XPart>
 	{
 		//split string into tokens
 		let tokens = Equation::split(to_parse);
@@ -102,11 +100,7 @@ impl Equation
 		let lx = Equation::to_xparts(ltokens);
 		let rx = Equation::to_xparts(rtokens);
 		//reduce equation (make it equal to zero)
-	}
-
-	pub fn solve()
-	{
-
+	    Equation::reduce(&lx, &rx)
 	}
 }
 
@@ -132,14 +126,6 @@ fn test_equation_tokenizer()
 			*(test1[2].get_type()) == TokenType::X_OPERAND &&
 			*(test1[3].get_type()) == TokenType::ADD_SUB &&
 			*(test1[4].get_type()) == TokenType::NUMBER);
-}
-
-#[test]
-fn test_solve()
-{
-	// 5 * X^0 + 4 * X^1 - 9.3 * X^2 = 1 * X^0
-	// 5 * X^0 + 4 * X^1 = 4 * X^0
-	// 42 ∗ X^0 = 42 ∗ X^0
 }
 
 #[test]
