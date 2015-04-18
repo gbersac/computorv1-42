@@ -37,20 +37,27 @@ impl Solver
         (a, b, c)
     }
 
-    pub fn solve(xs: &Vec<XPart>) -> Solution
+    fn solve_degree_0(a: f32, b: f32, c: f32) -> Solution
     {
-        let (a, b, c) = Solver::analyze_xparts(xs);
-        println!("a {}, b {}, c {}", a, b, c);
-        if a == 0. && b == 0.{
-            if c != 0.{
-                return Solution::NoSolution;
-            }
-            return Solution::Infinite;
+        if c != 0.{
+            Solution::NoSolution
+        }else{
+            Solution::Infinite
         }
+    }
+
+    fn solve_degree_1(a: f32, b: f32, c: f32) -> Solution
+    {
+        Solution::Simple(c / b)
+    }
+
+    fn solve_degree_2(a: f32, b: f32, c: f32) -> Solution
+    {
         let discriminant = b * b - 4. * a * c;
         match discriminant.partial_cmp(&0.).unwrap(){
             Ordering::Equal     => {
-                Solution::Simple(b * b - 4. * a * c)
+                let x = -b / (2. * a);
+                Solution::Simple(x)
             },
             Ordering::Greater   => {
                 let x1 = (-b - discriminant.sqrt()) / (2. * a);
@@ -60,6 +67,19 @@ impl Solver
             Ordering::Less      => {
                 Solution::Complex(0., 0.)
             },
+        }
+    }
+
+    pub fn solve(xs: &Vec<XPart>) -> Solution
+    {
+        let (a, b, c) = Solver::analyze_xparts(xs);
+        println!("a {}, b {}, c {}", a, b, c);
+        if a == 0. && b == 0.{
+            Solver::solve_degree_0(a, b, c)
+        }else if a == 0.{
+            Solver::solve_degree_1(a, b, c)
+        }else{
+            Solver::solve_degree_2(a, b, c)
         }
     }
 
@@ -112,17 +132,25 @@ mod test
     {
 	    let x = Equation::parse(&equation.to_string());
 	    let result = Solver::solve(&x);
-	    println!("{:?} -> r{:?}", equation, result);
+	    println!("{:?} -> {:?} must be {:?}", 
+	             equation, result, sol);
         assert!(result == sol);
     }
 
     #[test]
     fn test_solve()
     {
-        cmp_solve("6 + 1 * X^1 - 1 * X^2 = 0", Solution::Double(3., -2.));
-        // let test2 = cmp_solve("5 * X^0 + 4 * X^1 - 9.3 * X^2 = 1 * X^0");
+        // degree 0
 	    cmp_solve("42 * X^0 = 42 * X^0", Solution::Infinite);
 	    cmp_solve("4 * X^0 = 8 * X^0", Solution::NoSolution);
+        // degree 1
+        cmp_solve("10 * X^0 = 4 * X^0 + 3 * X^1", Solution::Simple(2.));
+        // degree 2
+        cmp_solve("6 + 1 * X^1 - 1 * X^2 = 0", Solution::Double(3., -2.));
+        cmp_solve("6 * X^0 + 11 * X^1 + 5 * X^2 = 1 * X^0 + 1 * X^1", Solution::Simple(-1.));
+        // cmp_solve("5 * X^0 + 13 * X^1 + 3 * X^2 = 1 * X^0 + 1 * X^1", 
+        //         Solution::Double(-3.632993, -0.367007));
+        // let test2 = cmp_solve("5 * X^0 + 4 * X^1 - 9.3 * X^2 = 1 * X^0");
     }
 
     fn cmp_print_xparts(l: &str, r: &str)
