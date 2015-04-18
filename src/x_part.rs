@@ -1,5 +1,5 @@
 use tokenizer::{Token};
-use equation::{TokenType};
+use parser::{TokenType};
 use fc_string;
 
 /// This is the representation of a "a * X^p"

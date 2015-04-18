@@ -13,9 +13,9 @@ pub enum TokenType
 	EQUAL,
 }
 
-pub struct Equation;
+pub struct Parser;
 
-impl Equation
+impl Parser
 {
 	fn split(to_parse: &String) -> Vec<Token<TokenType>>
 	{
@@ -94,13 +94,13 @@ impl Equation
 	pub fn parse(to_parse: &String) -> Vec<XPart>
 	{
 		//split string into tokens
-		let tokens = Equation::split(to_parse);
+		let tokens = Parser::split(to_parse);
 		//split tokens into x_parts
-		let (ltokens, rtokens) = Equation::split_tokens(tokens);
-		let lx = Equation::to_xparts(ltokens);
-		let rx = Equation::to_xparts(rtokens);
+		let (ltokens, rtokens) = Parser::split_tokens(tokens);
+		let lx = Parser::to_xparts(ltokens);
+		let rx = Parser::to_xparts(rtokens);
 		//reduce equation (make it equal to zero)
-	    Equation::reduce(&lx, &rx)
+	    Parser::reduce(&lx, &rx)
 	}
 }
 
@@ -108,7 +108,7 @@ impl Equation
 fn test_equation_tokenizer()
 {
 	//basic test
-	let test1 = Equation::split(&"42 * X^0 = 0".to_string());
+	let test1 = Parser::split(&"42 * X^0 = 0".to_string());
 	println!("{:?}", test1);
 	assert!(test1.len() == 5 &&
 			*(test1[0].get_type()) == TokenType::NUMBER &&
@@ -118,7 +118,7 @@ fn test_equation_tokenizer()
 			*(test1[4].get_type()) == TokenType::NUMBER);
 
 	//more complex test
-	let test1 = Equation::split(&"1.0 * X^0 + 5.7 * X^1 = 0".to_string());
+	let test1 = Parser::split(&"1.0 * X^0 + 5.7 * X^1 = 0".to_string());
 	println!("{:?}", test1);
 	assert!(test1.len() == 9 &&
 			*(test1[0].get_type()) == TokenType::NUMBER &&
@@ -154,25 +154,25 @@ fn test_XPart()
 #[test]
 fn test_to_xparts()
 {
-	let tokens1 = Equation::split(&"3 * X^5".to_string());
-	let test1 = Equation::to_xparts(tokens1);
+	let tokens1 = Parser::split(&"3 * X^5".to_string());
+	let test1 = Parser::to_xparts(tokens1);
 	println!("{:?}", test1);
 	assert!(test1[0].test_values(3., 5.));
 
-	let tokens2 = Equation::split(&"3 * X^4 + 5 * X^6".to_string());
-	let test2 = Equation::to_xparts(tokens2);
+	let tokens2 = Parser::split(&"3 * X^4 + 5 * X^6".to_string());
+	let test2 = Parser::to_xparts(tokens2);
 	println!("{:?}", test2);
 	assert!(test2[0].test_values(3., 4.));
 	assert!(test2[1].test_values(5., 6.));
 
-	let tokens3 = Equation::split(&"3 * X^4 - 5 * X^6".to_string());
-	let test3 = Equation::to_xparts(tokens3);
+	let tokens3 = Parser::split(&"3 * X^4 - 5 * X^6".to_string());
+	let test3 = Parser::to_xparts(tokens3);
 	println!("{:?}", test3);
 	assert!(test3[0].test_values(3., 4.));
 	assert!(test3[1].test_values(-5., 6.));
 
-	let tokens4 = Equation::split(&"2 - 3 * X^1".to_string());
-	let test4 = Equation::to_xparts(tokens4);
+	let tokens4 = Parser::split(&"2 - 3 * X^1".to_string());
+	let test4 = Parser::to_xparts(tokens4);
 	println!("{:?}", test4);
 	assert!(test4[0].test_values(2., 0.) &&
 	        test4[1].test_values(-3., 1.));
@@ -181,23 +181,23 @@ fn test_to_xparts()
 #[test]
 fn test_reduce()
 {
-	let tokens1 = Equation::split(&"2 + 3 * X^1 + 4 * X^2".to_string());
-	let x1      = Equation::to_xparts(tokens1);
-	let tokens2 = Equation::split(&"0".to_string());
-	let x2      = Equation::to_xparts(tokens2);
-	let tokens3 = Equation::split(&"1 + 5 * X^1".to_string());
-	let x3      = Equation::to_xparts(tokens3);
-	let tokens4 = Equation::split(&"2 - 3 * X^1".to_string());
-	let x4      = Equation::to_xparts(tokens4);
+	let tokens1 = Parser::split(&"2 + 3 * X^1 + 4 * X^2".to_string());
+	let x1      = Parser::to_xparts(tokens1);
+	let tokens2 = Parser::split(&"0".to_string());
+	let x2      = Parser::to_xparts(tokens2);
+	let tokens3 = Parser::split(&"1 + 5 * X^1".to_string());
+	let x3      = Parser::to_xparts(tokens3);
+	let tokens4 = Parser::split(&"2 - 3 * X^1".to_string());
+	let x4      = Parser::to_xparts(tokens4);
 
-    let test1 = Equation::reduce(&x1, &x2);
+    let test1 = Parser::reduce(&x1, &x2);
 	println!("{:?}", test1);
     assert!(test1.len() == 3 &&
            test1[0].test_values(2., 0.) &&
            test1[1].test_values(3., 1.) &&
            test1[2].test_values(4., 2.));
 
-    let test2 = Equation::reduce(&x1, &x3);
+    let test2 = Parser::reduce(&x1, &x3);
 	println!("{:?}", test2);
     assert!(test2.len() == 3 &&
            test2[0].test_values(1., 0.) &&
@@ -206,7 +206,7 @@ fn test_reduce()
 
     println!("###########################");
 	println!("x4{:?}", x4);
-    let test2 = Equation::reduce(&x1, &x4);
+    let test2 = Parser::reduce(&x1, &x4);
 	println!("{:?}", test2);
     assert!(test2.len() == 3 &&
            test2[0].test_values(0., 0.) &&

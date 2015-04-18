@@ -126,11 +126,11 @@ impl Solver
 mod test
 {
     use super::*;
-	use equation::Equation;
+	use parser::Parser;
 
     fn cmp_solve(equation: &str, sol: Solution)
     {
-	    let x = Equation::parse(&equation.to_string());
+	    let x = Parser::parse(&equation.to_string());
 	    let result = Solver::solve(&x);
 	    println!("{:?} -> {:?} must be {:?}", 
 	             equation, result, sol);
@@ -155,7 +155,7 @@ mod test
 
     fn cmp_print_xparts(l: &str, r: &str)
     {
-        let xs = Equation::parse(&l.to_string());
+        let xs = Parser::parse(&l.to_string());
         let s = Solver::print_xparts(&xs);
         assert!(s == r);
     }

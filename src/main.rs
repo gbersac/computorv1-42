@@ -6,11 +6,11 @@
 #![plugin(regex_macros)]
 extern crate regex;
 
-use equation::Equation;
+use parser::Parser;
 use solver::Solver;
 
 mod tokenizer;
-mod equation;
+mod parser;
 mod fc_string;
 mod x_part;
 mod solver;
@@ -27,6 +27,6 @@ fn get_equation() -> String
 fn main() 
 {
     let equation_str = get_equation();
-    let equation = Equation::parse(&equation_str);
+    let equation = Parser::parse(&equation_str);
     Solver::print_xparts(&equation);
 }
