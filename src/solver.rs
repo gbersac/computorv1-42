@@ -170,4 +170,12 @@ mod test
         cmp_print_xparts("8 * X^0 - 6 * X^1 + 0 * X^2 - 5.6 * X^3 = 3 * X^0",
                          "5 + -6 * X + -5.6 * X^3");
     }
+
+    #[test]
+    #[should_panic]
+    fn degree3()
+    {
+        cmp_solve("8 * X^0 - 6 * X^1 + 0 * X^2 - 5.6 * X^3 = 3 * X^0",
+                 Solution::NoSolution);
+    }
 }
