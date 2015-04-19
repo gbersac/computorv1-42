@@ -3,6 +3,7 @@ use std::fmt::Write;
 use std;
 use std::cmp::Ordering;
 use x_part::{XPart};
+use nbr_complex::NbrComplex;
 
 pub struct Solver;
 
@@ -14,7 +15,7 @@ pub enum Solution
     /// If discriminant > 0
     Double(f32, f32),
     /// If discriminant < 0
-    Complex(f32, f32),
+    Complex(NbrComplex, NbrComplex),
     /// If 0 = 0
     Infinite,
     /// If a = b (where a and b are scalar)
@@ -65,7 +66,11 @@ impl Solver
                 Solution::Double(x1, x2)
             },
             Ordering::Less      => {
-                Solution::Complex(0., 0.)
+                let absolute = discriminant.abs().sqrt();
+                Solution::Complex(
+                        NbrComplex::new(-b, absolute, 2. * a),
+                        NbrComplex::new(-b, -absolute, 2. * a),
+                        )
             },
         }
     }
@@ -127,6 +132,7 @@ mod test
 {
     use super::*;
 	use parser::Parser;
+    use nbr_complex::NbrComplex;
 
     fn cmp_solve(equation: &str, sol: Solution)
     {
@@ -150,7 +156,12 @@ mod test
         cmp_solve("6 * X^0 + 11 * X^1 + 5 * X^2 = 1 * X^0 + 1 * X^1", Solution::Simple(-1.));
         // cmp_solve("5 * X^0 + 13 * X^1 + 3 * X^2 = 1 * X^0 + 1 * X^1", 
         //         Solution::Double(-3.632993, -0.367007));
-        // let test2 = cmp_solve("5 * X^0 + 4 * X^1 - 9.3 * X^2 = 1 * X^0");
+        cmp_solve("3 * X^0 + 6 * X^1 + 5 * X^2 = 1 * X^0",
+                 Solution::Complex(
+                     NbrComplex::new(-6., 2., 10.),
+                     NbrComplex::new(-6., -2., 10.),
+                     )
+                 );
     }
 
     fn cmp_print_xparts(l: &str, r: &str)
