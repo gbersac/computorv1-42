@@ -1,11 +1,9 @@
+use parser::Parser;
 use std::fmt::Write;
-// use std::io::Write;
 use std;
 use std::cmp::Ordering;
 use x_part::{XPart};
 use nbr_complex::NbrComplex;
-
-pub struct Solver;
 
 #[derive(PartialEq, Clone, Debug)]
 pub enum Solution
@@ -20,71 +18,98 @@ pub enum Solution
     Infinite,
     /// If a = b (where a and b are scalar)
     NoSolution,
+    /// When degree > 2
+    NotComputable,
+}
+
+pub struct Solver
+{
+    pub xs:             Vec<XPart>,
+    pub discriminant:   Option<f32>,
+    pub sol:            Solution,
+    pub degree:         f32,
 }
 
 impl Solver
 {
-    fn analyze_xparts(xs: &Vec<XPart>) -> (f32, f32, f32)
+    pub fn new(equ_str: &str) -> Solver
+    {
+        let _xs = Parser::parse(&equ_str.to_string());
+        let mut solver = Solver{
+            xs: _xs,
+            discriminant: None,
+            sol: Solution::NoSolution,
+            degree: 0.,
+        };
+        solver.solve();
+        solver
+    }
+
+    fn analyze_xparts(&mut self) -> (f32, f32, f32)
     {
         let (mut a, mut b, mut c) = (0., 0., 0.);
-        for x in xs {
+        for x in &self.xs {
             match x.power {
                 0. => c = x.multiply,
                 1. => b = x.multiply,
                 2. => a = x.multiply,
-                _ => panic!("This equation is more than degree 2"),
+                _  => self.sol = Solution::NotComputable,
             };
+            if self.degree < x.power{
+                self.degree = x. power;
+            }
         }
         (a, b, c)
     }
 
-    fn solve_degree_0(a: f32, b: f32, c: f32) -> Solution
+    fn solve_degree_0(&mut self, a: f32, b: f32, c: f32)
     {
         if c != 0.{
-            Solution::NoSolution
+            self.sol = Solution::NoSolution
         }else{
-            Solution::Infinite
+            self.sol = Solution::Infinite
         }
     }
 
-    fn solve_degree_1(a: f32, b: f32, c: f32) -> Solution
+    fn solve_degree_1(&mut self, a: f32, b: f32, c: f32)
     {
-        Solution::Simple(c / b)
+        self.sol = Solution::Simple(c / b);
     }
 
-    fn solve_degree_2(a: f32, b: f32, c: f32) -> Solution
+    fn solve_degree_2(&mut self, a: f32, b: f32, c: f32)
     {
         let discriminant = b * b - 4. * a * c;
+        self.discriminant = Some(discriminant);
         match discriminant.partial_cmp(&0.).unwrap(){
             Ordering::Equal     => {
                 let x = -b / (2. * a);
-                Solution::Simple(x)
+                self.sol = Solution::Simple(x);
             },
             Ordering::Greater   => {
                 let x1 = (-b - discriminant.sqrt()) / (2. * a);
                 let x2 = (-b + discriminant.sqrt()) / (2. * a);
-                Solution::Double(x1, x2)
+                self.sol = Solution::Double(x1, x2);
             },
             Ordering::Less      => {
                 let absolute = discriminant.abs().sqrt();
-                Solution::Complex(
+                self.sol = Solution::Complex(
                         NbrComplex::new(-b, absolute, 2. * a),
                         NbrComplex::new(-b, -absolute, 2. * a),
-                        )
+                        );
             },
         }
     }
 
-    pub fn solve(xs: &Vec<XPart>) -> Solution
+    pub fn solve(&mut self)
     {
-        let (a, b, c) = Solver::analyze_xparts(xs);
+        let (a, b, c) = self.analyze_xparts();
         println!("a {}, b {}, c {}", a, b, c);
-        if a == 0. && b == 0.{
-            Solver::solve_degree_0(a, b, c)
-        }else if a == 0.{
-            Solver::solve_degree_1(a, b, c)
-        }else{
-            Solver::solve_degree_2(a, b, c)
+        if self.degree == 0.{
+            self.solve_degree_0(a, b, c);
+        }else if self.degree == 1.{
+            self.solve_degree_1(a, b, c);
+        }else if self.degree == 2.{
+            self.solve_degree_2(a, b, c);
         }
     }
 
@@ -110,19 +135,19 @@ impl Solver
 
     /// Function to print a list of xparts as an  equation equaling 0.
     /// Return only for the tests
-    pub fn print_xparts(xs: &Vec<XPart>) -> String
+    pub fn print_xparts(&self) -> String
     {
-        let mut degree = 0;
+        let mut degree = 0.;
         let mut to_return = String::new();
         let mut is_first = true;
-        for x in xs{
+        for x in &self.xs{
             if x.multiply != 0.{
-                to_return.push_str(&Solver::xpart_to_string(x, is_first));
+                to_return.push_str(&Solver::xpart_to_string(&x, is_first));
                 is_first = false;
             }
         }
         println!("{} = 0", to_return);
-        println!("Polynomial degree: {}", degree);
+        println!("Polynomial degree: {}", self.degree);
         to_return
     }
 }
@@ -136,11 +161,10 @@ mod test
 
     fn cmp_solve(equation: &str, sol: Solution)
     {
-	    let x = Parser::parse(&equation.to_string());
-	    let result = Solver::solve(&x);
+	    let solver = Solver::new(equation);
 	    println!("{:?} -> {:?} must be {:?}", 
-	             equation, result, sol);
-        assert!(result == sol);
+	             equation, solver.sol, sol);
+        assert!(solver.sol == sol);
     }
 
     #[test]
@@ -166,8 +190,9 @@ mod test
 
     fn cmp_print_xparts(l: &str, r: &str)
     {
-        let xs = Parser::parse(&l.to_string());
-        let s = Solver::print_xparts(&xs);
+        let solver = Solver::new(l);
+        let s = solver.print_xparts();
+        println!("result: {}", s);
         assert!(s == r);
     }
 

@@ -29,5 +29,5 @@ fn main()
 {
     let equation_str = get_equation();
     let equation = Parser::parse(&equation_str);
-    Solver::print_xparts(&equation);
+    // Solver::print_xparts(&equation);
 }
