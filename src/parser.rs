@@ -50,19 +50,31 @@ impl Parser
 		(ltokens, rtokens)
 	}
 
+    fn append_xpart(tok_buffer: &mut Vec<Token<TokenType>>, xs: &mut Vec<XPart>)
+    {
+        if tok_buffer.is_empty(){
+            return ;
+        }
+		let x = XPart::from_tokens(&tok_buffer);
+		if x.multiply != 0.{
+			xs.push(x);
+		}
+        tok_buffer.clear();
+    }
+
 	fn to_xparts(tokens: Vec<Token<TokenType>>) -> Vec<XPart>
 	{
 		let mut tok_buffer = Vec::new();
 		let mut to_return = Vec::new();
 		for tok in tokens{
 			if *tok.get_type() == TokenType::ADD_SUB{
-				to_return.push(XPart::from_tokens(&tok_buffer));
+				Parser::append_xpart(&mut tok_buffer, &mut to_return);
 				tok_buffer.push(tok);
 			}else{
 				tok_buffer.push(tok);
 			}
 		}
-		to_return.push(XPart::from_tokens(&tok_buffer));
+		Parser::append_xpart(&mut tok_buffer, &mut to_return);
 		to_return
 	}
 

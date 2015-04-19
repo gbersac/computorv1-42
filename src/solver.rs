@@ -149,6 +149,9 @@ impl Solver
                 is_first = false;
             }
         }
+        if to_return.is_empty(){
+            write!(&mut to_return, "0");
+        }
         println!("{} = 0", to_return);
         println!("Polynomial degree: {}", self.degree);
         self.print_discriminant();
@@ -183,6 +186,8 @@ mod test
         // degree 1
         cmp_solve("10 * X^0 = 4 * X^0 + 3 * X^1", Solution::Simple(2.));
         cmp_solve("5 * X^0 + 4 * X^1 = 4 * X^0", Solution::Simple(-0.25));
+        cmp_solve("-5 * X^0 + 4 * X^1 = - 4 * X^0", Solution::Simple(0.25));
+        cmp_solve("-5 * X^0 + 4 * X^1 + 0 * X^2 = - 4 * X^0", Solution::Simple(0.25));
         // degree 2
         cmp_solve("6 + 1 * X^1 - 1 * X^2 = 0", Solution::Double(3., -2.));
         cmp_solve("6 * X^0 + 11 * X^1 + 5 * X^2 = 1 * X^0 + 1 * X^1", Solution::Simple(-1.));

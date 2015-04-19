@@ -36,7 +36,7 @@ impl Display for Solution
                                            x1, x2));
             },
             Solution::Infinite        =>{
-                result = result.and(write!(f, "There is an infinite number of solution."));
+                result = result.and(write!(f, "All real numbers are solution."));
             },
             Solution::NoSolution      =>{
                 result = result.and(write!(f, "There is no solution."));
