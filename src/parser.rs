@@ -84,7 +84,9 @@ impl Parser
             }
             //if no power equivalent in left add new XPart in left
             if !found{
-                to_return.push(rx.clone());
+                let mut x = rx.clone();
+                x.multiply = -x.multiply;
+                to_return.push(x);
             }
         }
         to_return

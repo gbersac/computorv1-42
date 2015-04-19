@@ -215,6 +215,7 @@ mod test
     fn cmp_solve(equation: &str, sol: Solution)
     {
 	    let solver = Solver::new(equation);
+	    println!("{:?}", solver.xs);
 	    println!("{:?} -> {:?} must be {:?}", 
 	             equation, solver.sol, sol);
         assert!(solver.sol == sol);
