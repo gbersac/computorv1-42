@@ -28,6 +28,6 @@ fn get_equation() -> String
 fn main() 
 {
     let equation_str = get_equation();
-    let equation = Parser::parse(&equation_str);
-    // Solver::print_xparts(&equation);
+    let solver = Solver::new(&equation_str);
+    solver.print();
 }

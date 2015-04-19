@@ -1,4 +1,5 @@
 use parser::Parser;
+use std::fmt::{Formatter, Display, Error};
 use std::fmt::Write;
 use std;
 use std::cmp::Ordering;
@@ -20,6 +21,38 @@ pub enum Solution
     NoSolution,
     /// When degree > 2
     NotComputable,
+}
+
+impl Display for Solution
+{
+    fn fmt(&self, f: &mut Formatter) -> Result<(), Error>
+    {
+        let mut result = Ok(());
+        match *self{
+            Solution::Simple(ref x)       =>{
+                result = result.and(write!(f, "The solution is: {}", x));
+            },
+            Solution::Double(ref x1, ref x2)  =>{
+                result = result.and(write!(f, "The two solutions are: {}, {}", 
+                                           x1, x2));
+            },
+            Solution::Complex(ref x1, ref x2) =>{
+                result = result.and(write!(f, "The two solutions are: {}, {}", 
+                                           x1, x2));
+            },
+            Solution::Infinite        =>{
+                result = result.and(write!(f, "There is an infinite number of solution."));
+            },
+            Solution::NoSolution      =>{
+                result = result.and(write!(f, "There is no solution."));
+            }
+            Solution::NotComputable   =>{
+                result = result.and(write!(f, 
+                        "The polynomial degree is stricly greater than 2, I can't solve."));
+            }
+        }
+        result
+    }
 }
 
 pub struct Solver
@@ -73,7 +106,7 @@ impl Solver
 
     fn solve_degree_1(&mut self, a: f32, b: f32, c: f32)
     {
-        self.sol = Solution::Simple(c / b);
+        self.sol = Solution::Simple(-c / b);
     }
 
     fn solve_degree_2(&mut self, a: f32, b: f32, c: f32)
@@ -103,7 +136,6 @@ impl Solver
     pub fn solve(&mut self)
     {
         let (a, b, c) = self.analyze_xparts();
-        println!("a {}, b {}, c {}", a, b, c);
         if self.degree == 0.{
             self.solve_degree_0(a, b, c);
         }else if self.degree == 1.{
@@ -133,9 +165,28 @@ impl Solver
         to_return
     }
 
+    fn print_discriminant(&self)
+    {
+        if self.discriminant.is_none(){
+            return ;
+        }
+        let discriminant = self.discriminant.unwrap();
+        match discriminant.partial_cmp(&0.).unwrap(){
+            Ordering::Equal     => {
+                println!("Discriminant is equal to 0, the solution is:");
+            },
+            Ordering::Greater   => {
+                println!("Discriminant is strictly positive, the two solutions are:");
+            },
+            Ordering::Less      => {
+                println!("Discriminant is strictly negative, the two solutions are:");
+            },
+        }
+    }
+
     /// Function to print a list of xparts as an  equation equaling 0.
     /// Return only for the tests
-    pub fn print_xparts(&self) -> String
+    pub fn print(&self) -> String
     {
         let mut degree = 0.;
         let mut to_return = String::new();
@@ -148,6 +199,8 @@ impl Solver
         }
         println!("{} = 0", to_return);
         println!("Polynomial degree: {}", self.degree);
+        self.print_discriminant();
+        println!("{}", self.sol);
         to_return
     }
 }
@@ -175,6 +228,7 @@ mod test
 	    cmp_solve("4 * X^0 = 8 * X^0", Solution::NoSolution);
         // degree 1
         cmp_solve("10 * X^0 = 4 * X^0 + 3 * X^1", Solution::Simple(2.));
+        cmp_solve("5 * X^0 + 4 * X^1 = 4 * X^0", Solution::Simple(-0.25));
         // degree 2
         cmp_solve("6 + 1 * X^1 - 1 * X^2 = 0", Solution::Double(3., -2.));
         cmp_solve("6 * X^0 + 11 * X^1 + 5 * X^2 = 1 * X^0 + 1 * X^1", Solution::Simple(-1.));
@@ -186,32 +240,27 @@ mod test
                      NbrComplex::new(-6., -2., 10.),
                      )
                  );
+        // degree 3
+        cmp_solve("8 * X^0 - 6 * X^1 + 0 * X^2 - 5.6 * X^3 = 3 * X^0",
+                  Solution::NotComputable);
     }
 
-    fn cmp_print_xparts(l: &str, r: &str)
+    fn cmp_print(l: &str, r: &str)
     {
         let solver = Solver::new(l);
-        let s = solver.print_xparts();
+        let s = solver.print();
         println!("result: {}", s);
         assert!(s == r);
     }
 
     #[test]
-    fn test_print_xparts()
+    fn test_print()
     {
-        cmp_print_xparts("5 * X^0 + 4 * X^1 - 9.3 * X^2 = 1 * X^0",
+        cmp_print("5 * X^0 + 4 * X^1 - 9.3 * X^2 = 1 * X^0",
                          "4 + 4 * X + -9.3 * X^2");
-        cmp_print_xparts("5 * X^0 + 4 * X^1 = 4 * X^0",
+        cmp_print("5 * X^0 + 4 * X^1 = 4 * X^0",
                          "1 + 4 * X");
-        cmp_print_xparts("8 * X^0 - 6 * X^1 + 0 * X^2 - 5.6 * X^3 = 3 * X^0",
+        cmp_print("8 * X^0 - 6 * X^1 + 0 * X^2 - 5.6 * X^3 = 3 * X^0",
                          "5 + -6 * X + -5.6 * X^3");
-    }
-
-    #[test]
-    #[should_panic]
-    fn degree3()
-    {
-        cmp_solve("8 * X^0 - 6 * X^1 + 0 * X^2 - 5.6 * X^3 = 3 * X^0",
-                 Solution::NoSolution);
     }
 }
