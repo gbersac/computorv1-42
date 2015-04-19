@@ -204,6 +204,13 @@ mod test
                   Solution::NotComputable);
     }
 
+    fn test_simple_formatting()
+    {
+        cmp_solve("6 + 11 * X + 5 * X^2 = 1 + 1 * X", Solution::Simple(-1.));
+        cmp_solve("6 + X^1 - X^2 = 0", Solution::Double(3., -2.));
+        cmp_solve("- X^2 + X^1 + 6 = 0", Solution::Double(3., -2.));
+    }
+
     fn cmp_print(l: &str, r: &str)
     {
         let solver = Solver::new(l);
