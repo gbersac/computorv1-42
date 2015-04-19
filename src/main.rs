@@ -15,6 +15,7 @@ mod fc_string;
 mod x_part;
 mod solver;
 mod nbr_complex;
+mod solution;
 
 fn get_equation() -> String
 {
