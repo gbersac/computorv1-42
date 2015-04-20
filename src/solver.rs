@@ -1,8 +1,6 @@
 use solution::Solution;
 use parser::Parser;
-use std::fmt::{Formatter, Display, Error};
 use std::fmt::Write;
-use std;
 use std::cmp::Ordering;
 use x_part::{XPart};
 use nbr_complex::NbrComplex;
@@ -47,6 +45,7 @@ impl Solver
         (a, b, c)
     }
 
+    #[allow(unused_variables)]
     fn solve_degree_0(&mut self, a: f32, b: f32, c: f32)
     {
         if c != 0.{
@@ -56,6 +55,7 @@ impl Solver
         }
     }
 
+    #[allow(unused_variables)]
     fn solve_degree_1(&mut self, a: f32, b: f32, c: f32)
     {
         self.sol = Solution::Simple(-c / b);
@@ -97,6 +97,7 @@ impl Solver
         }
     }
 
+    #[allow(unused_must_use)]
     fn xpart_to_string(x: &XPart, is_first: bool) -> String
     {
         let mut to_return = String::new();
@@ -138,9 +139,9 @@ impl Solver
 
     /// Function to print a list of xparts as an  equation equaling 0.
     /// Return only for the tests
+    #[allow(unused_must_use)]
     pub fn print(&self) -> String
     {
-        let mut degree = 0.;
         let mut to_return = String::new();
         let mut is_first = true;
         for x in &self.xs{

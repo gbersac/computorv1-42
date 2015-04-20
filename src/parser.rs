@@ -1,16 +1,14 @@
 use tokenizer::{Tokenizer, TokenInfo, Token};
-use regex::{Regex};
 use x_part::{XPart};
-use fc_string;
 
 #[derive(PartialEq, Clone)]
 pub enum TokenType
 {
-	NUMBER,
-	MULTIPLY,
-	X_OPERAND,
-	ADD_SUB,
-	EQUAL,
+	Number,
+	Multiply,
+	XOperand,
+	AddSub,
+	Equal,
 }
 
 pub struct Parser;
@@ -20,11 +18,11 @@ impl Parser
 	fn split(to_parse: &String) -> Vec<Token<TokenType>>
 	{
 		let token_types = vec![
-			TokenInfo::new(TokenType::X_OPERAND, regex!("X *\\^ *[0-9]")),
-			TokenInfo::new(TokenType::NUMBER, regex!("[0-9]+\\.?[0-9]*")),
-			TokenInfo::new(TokenType::MULTIPLY, regex!("\\*")),
-			TokenInfo::new(TokenType::ADD_SUB, regex!("[+-]")),
-			TokenInfo::new(TokenType::EQUAL, regex!("=")),
+			TokenInfo::new(TokenType::XOperand, regex!("X *\\^ *[0-9]")),
+			TokenInfo::new(TokenType::Number, regex!("[0-9]+\\.?[0-9]*")),
+			TokenInfo::new(TokenType::Multiply, regex!("\\*")),
+			TokenInfo::new(TokenType::AddSub, regex!("[+-]")),
+			TokenInfo::new(TokenType::Equal, regex!("=")),
 		];
 		let tokenizer = Tokenizer::new(token_types);
 		tokenizer.split(to_parse)
@@ -33,13 +31,11 @@ impl Parser
 	fn split_tokens(tokens: Vec<Token<TokenType>>)
 			-> (Vec<Token<TokenType>>, Vec<Token<TokenType>>)
 	{
-		let mut tok_buffer: Vec<Token<TokenType>> = Vec::new();
-		// let to_return = Vec::new();
 		let mut ltokens = Vec::new();
 		let mut rtokens = Vec::new();
 		let mut left = true;
 		for tok in tokens{
-			if *tok.get_type() == TokenType::EQUAL{
+			if *tok.get_type() == TokenType::Equal{
 				left = false;
 			}else if left{
 				ltokens.push(tok);
@@ -67,7 +63,7 @@ impl Parser
 		let mut tok_buffer = Vec::new();
 		let mut to_return = Vec::new();
 		for tok in tokens{
-			if *tok.get_type() == TokenType::ADD_SUB{
+			if *tok.get_type() == TokenType::AddSub{
 				Parser::append_xpart(&mut tok_buffer, &mut to_return);
 				tok_buffer.push(tok);
 			}else{
@@ -125,42 +121,42 @@ fn test_equation_tokenizer()
 	let test1 = Parser::split(&"42 * X^0 = 0".to_string());
 	println!("{:?}", test1);
 	assert!(test1.len() == 5 &&
-			*(test1[0].get_type()) == TokenType::NUMBER &&
-			*(test1[1].get_type()) == TokenType::MULTIPLY &&
-			*(test1[2].get_type()) == TokenType::X_OPERAND &&
-			*(test1[3].get_type()) == TokenType::EQUAL &&
-			*(test1[4].get_type()) == TokenType::NUMBER);
+			*(test1[0].get_type()) == TokenType::Number &&
+			*(test1[1].get_type()) == TokenType::Multiply &&
+			*(test1[2].get_type()) == TokenType::XOperand &&
+			*(test1[3].get_type()) == TokenType::Equal &&
+			*(test1[4].get_type()) == TokenType::Number);
 
 	//more complex test
 	let test1 = Parser::split(&"1.0 * X^0 + 5.7 * X^1 = 0".to_string());
 	println!("{:?}", test1);
 	assert!(test1.len() == 9 &&
-			*(test1[0].get_type()) == TokenType::NUMBER &&
-			*(test1[1].get_type()) == TokenType::MULTIPLY &&
-			*(test1[2].get_type()) == TokenType::X_OPERAND &&
-			*(test1[3].get_type()) == TokenType::ADD_SUB &&
-			*(test1[4].get_type()) == TokenType::NUMBER);
+			*(test1[0].get_type()) == TokenType::Number &&
+			*(test1[1].get_type()) == TokenType::Multiply &&
+			*(test1[2].get_type()) == TokenType::XOperand &&
+			*(test1[3].get_type()) == TokenType::AddSub &&
+			*(test1[4].get_type()) == TokenType::Number);
 }
 
 #[test]
 fn test_XPart()
 {
 	let test1 = XPart::from_tokens(&vec![
-			Token::new(TokenType::NUMBER, "3".to_string())]);
+			Token::new(TokenType::Number, "3".to_string())]);
 	println!("{:?}", test1);
 	assert!(test1.power == 0. && test1.multiply == 3.);
 
 	let test2 = XPart::from_tokens(&vec![
-			Token::new(TokenType::NUMBER, "3".to_string()),
-			Token::new(TokenType::MULTIPLY, "*".to_string()),
-			Token::new(TokenType::X_OPERAND, "X^5".to_string())]);
+			Token::new(TokenType::Number, "3".to_string()),
+			Token::new(TokenType::Multiply, "*".to_string()),
+			Token::new(TokenType::XOperand, "X^5".to_string())]);
 	println!("{:?}", test2);
 	assert!(test2.power == 5. && test2.multiply == 3.);
 
 	let test3 = XPart::from_tokens(&vec![
-			Token::new(TokenType::X_OPERAND, "X^5".to_string()),
-			Token::new(TokenType::MULTIPLY, "*".to_string()),
-			Token::new(TokenType::NUMBER, "3".to_string())]);
+			Token::new(TokenType::XOperand, "X^5".to_string()),
+			Token::new(TokenType::Multiply, "*".to_string()),
+			Token::new(TokenType::Number, "3".to_string())]);
 	println!("{:?}", test3);
 	assert!(test3.power == 5. && test2.multiply == 3.);
 }

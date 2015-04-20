@@ -14,13 +14,13 @@ pub struct XPart
 
 impl XPart
 {
-	pub fn new(mul: f32, pow: f32) -> XPart
-	{
-	    XPart{
-	        multiply: mul,
-	        power: pow,
-	    }
-	}
+	// pub fn new(mul: f32, pow: f32) -> XPart
+	// {
+	//     XPart{
+	//         multiply: mul,
+	//         power: pow,
+	//     }
+	// }
 
 	fn extract_power(xstr: &String) -> f32
 	{
@@ -44,18 +44,18 @@ impl XPart
 		let mut is_negative = false;
 		for tok in tokens.iter(){
 			match *tok.get_type(){
-				TokenType::ADD_SUB => {
+				TokenType::AddSub => {
 					if tok.get_content() == "-" {
 						is_negative = true;
 					}
 				}
-				TokenType::NUMBER => {
+				TokenType::Number => {
 					mul = tok.get_content().parse::<f32>().unwrap();
 					if is_negative{
 						mul = - mul;
 					}
 				},
-				TokenType::X_OPERAND => {
+				TokenType::XOperand => {
 					pow = XPart::extract_power(tok.get_content());
 				},
 				_ => {},
@@ -64,6 +64,8 @@ impl XPart
 		XPart{power: pow, multiply: mul}
 	}
 
+    /// Used in tests.
+    #[allow(dead_code)]
     pub fn test_values(&self, mul: f32, pow: f32) -> bool
     {
         self.multiply == mul && self.power == pow

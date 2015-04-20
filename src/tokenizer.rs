@@ -59,10 +59,10 @@ pub struct TokenInfo<E: Clone>
 
 impl<E: Clone> TokenInfo<E>
 {
-	pub fn new(typeT: E, reg: Regex) -> TokenInfo<E>
+	pub fn new(type_t: E, reg: Regex) -> TokenInfo<E>
 	{
 		TokenInfo{
-			token_type: typeT,
+			token_type: type_t,
 			re: reg,
 		}
 	}

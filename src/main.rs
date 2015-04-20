@@ -1,12 +1,9 @@
-#![feature(env)]
-#![feature(core)]
 #![feature(collections)]
 
 #![feature(plugin)]
 #![plugin(regex_macros)]
 extern crate regex;
 
-use parser::Parser;
 use solver::Solver;
 
 mod tokenizer;
