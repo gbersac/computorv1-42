@@ -1,2 +1,4 @@
 # computorv1-42
-Polynomial equation resolver
+Quadratic equation resolver in rust.
+
+Final grade : 100%
